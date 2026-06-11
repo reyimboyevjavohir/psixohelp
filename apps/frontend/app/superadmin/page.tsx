@@ -1,6 +1,7 @@
 
 import Link from 'next/link';
-import { getTokenFromCookies, apiGet } from '@/lib/api';
+import { apiGet } from '@/lib/api';
+import { getTokenFromCookies } from '@/lib/server-api';
 import { redirect } from 'next/navigation';
 
 export default async function SuperAdminPage() {
