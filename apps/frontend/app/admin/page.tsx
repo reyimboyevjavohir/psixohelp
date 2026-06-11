@@ -1,4 +1,3 @@
-'use client'
 
 import { apiGet } from '@/lib/api';
 import { getTokenFromCookies } from '@/lib/server-api';
