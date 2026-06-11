@@ -65,7 +65,7 @@ export function TestRunner({ test }: { test: Test }) {
                 onClick={() => setAnswer(qi, ai)}
                 className={`w-full rounded-xl border px-4 py-2.5 text-left text-sm transition ${answers[qi] === ai ? 'border-sky-500 bg-sky-50 text-sky-800 font-medium' : 'border-slate-200 hover:border-sky-300 hover:bg-slate-50'}`}
               >
-                {opt}
+                {String(opt.label ?? opt)}
               </button>
             ))}
           </div>
