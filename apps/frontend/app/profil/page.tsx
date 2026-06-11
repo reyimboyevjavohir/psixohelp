@@ -1,5 +1,6 @@
 
-import { apiGet, getTokenFromCookies } from '@/lib/api';
+import { apiGet } from '@/lib/api';
+import { getTokenFromCookies } from '@/lib/server-api';
 import { redirect } from 'next/navigation';
 import { CancelBookingButton } from './cancel-button';
 
