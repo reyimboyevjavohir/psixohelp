@@ -1,4 +1,3 @@
-import { getTokenFromCookies } from '@/lib/server-api';
 
 import { apiGet, getTokenFromCookies } from '@/lib/api';
 import { redirect } from 'next/navigation';
