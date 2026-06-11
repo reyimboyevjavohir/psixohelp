@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  PSYCHOLOGIST
+  ADMIN
+  SUPERADMIN
+}
+
+enum ResourceType {
+  BOOK
+  ARTICLE
+  VIDEO
+  GUIDE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum RiskLevel {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id            String        @id @default(cuid())
+  fullName      String
+  username      String        @unique
+  email         String        @unique
+  passwordHash  String
+  phone         String?
+  avatarUrl     String?
+  role          Role          @default(USER)
+  isActive      Boolean       @default(true)
+  profile       Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  bookings      Booking[]
+  testResults   TestResult[]
+  refreshTokens RefreshToken[]
+  moodEntries   MoodEntry[]
+  aiConversations AiConversation[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String
+  icon        String?
+  sortOrder   Int        @default(0)
+  meta        Json?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  tests       Test[]
+  books       Book[]
+  resources   Resource[]
+}
+
+model Psychologist {
+  id              String    @id @default(cuid())
+  fullName        String
+  slug            String    @unique
+  specialty       String
+  bio             String
+  experienceYears Int
+  rating          Float     @default(5)
+  reviewsCount    Int       @default(0)
+  price           Int
+  avatarUrl       String?
+  languages       Json
+  specializations Json
+  availability    Json
+  approaches      Json?
+  isActive        Boolean   @default(true)
+  isVerified      Boolean   @default(false)
+  meta            Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  bookings        Booking[]
+  advices         PsychologistAdvice[]
+  userId          String?  @unique
+}
+
+model PsychologistAdvice {
+  id             String       @id @default(cuid())
+  psychologistId String
+  title          String
+  category       String?
+  content        String
+  isPublished    Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  psychologist   Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+}
+
+
+model Test {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  description   String
+  durationMin   Int
+  questionCount Int
+  categoryId    String
+  instructions  String
+  questions     Json
+  resultBands   Json
+  isActive      Boolean      @default(true)
+  category      Category     @relation(fields: [categoryId], references: [id])
+  results       TestResult[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model TestResult {
+  id        String   @id @default(cuid())
+  userId    String
+  testId    String
+  score     Int
+  level     String
+  summary   String
+  details   Json
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  test      Test     @relation(fields: [testId], references: [id])
+}
+
+model Book {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  author        String
+  description   String
+  coverUrl      String?
+  categoryId    String
+  downloadUrl   String?
+  contentBlocks Json?
+  publishedAt   DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  category      Category  @relation(fields: [categoryId], references: [id])
+}
+
+model Resource {
+  id            String       @id @default(cuid())
+  title         String
+  slug          String       @unique
+  type          ResourceType
+  description   String
+  categoryId    String
+  url           String?
+  thumbnailUrl  String?
+  contentBlocks Json?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  category      Category     @relation(fields: [categoryId], references: [id])
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  userId         String
+  psychologistId String
+  scheduledAt    DateTime
+  mode           String
+  notes          String?
+  status         BookingStatus @default(PENDING)
+  paymentStatus  String        @default("pending")
+  meetingLink    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User          @relation(fields: [userId], references: [id])
+  psychologist   Psychologist  @relation(fields: [psychologistId], references: [id])
+}
+
+model MoodEntry {
+  id           String   @id @default(cuid())
+  userId       String
+  date         DateTime @default(now())
+  moodScore    Int      // 1-10
+  energyLevel  Int      // 1-10
+  anxietyLevel Int      // 1-10
+  sleepQuality Int      // 1-10
+  notes        String?
+  emotions     Json?    // string[]
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AiConversation {
+  id        String      @id @default(cuid())
+  userId    String
+  title     String?
+  riskLevel RiskLevel   @default(NONE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+}
+
+model AiMessage {
+  id                   String         @id @default(cuid())
+  conversationId       String
+  role                 String         // user | assistant
+  content              String
+  containsCrisis       Boolean        @default(false)
+  createdAt            DateTime       @default(now())
+  conversation         AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
