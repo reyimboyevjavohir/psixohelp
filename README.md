@@ -302,3 +302,4 @@ Yoki GitHub Actions bilan avtomatlashtiring (`.github/workflows/deploy.yml`).
 # psixohelp
 # psixohelp
 # Psixohelp_exam
+# Psixohelp_exam
